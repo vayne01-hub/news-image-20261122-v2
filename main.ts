@@ -351,8 +351,10 @@ function drawText(cv: Canvas, s: string, x: number, y: number, scale: number, c:
   }
 }
 // Greedy word wrap; never splits a word in two.
-function wrapText(s: string, maxW: number, scale: number): string[] {
-  const words = s.split(" ");
+// With atomicQuotes, a single-quoted phrase ('Jewish terrorism') is one
+// unbreakable unit: it moves whole to the next line instead of splitting.
+function wrapText(s: string, maxW: number, scale: number, atomicQuotes = false): string[] {
+  const words = atomicQuotes ? (s.match(/'[^']*'|\S+/g) ?? []) : s.split(" ");
   const lines: string[] = [];
   let cur = "";
   for (const w of words) {
@@ -391,7 +393,7 @@ const STORIES: Story[] = [
   { n: 2, region: "BENGHAZI", headline: "Sea drones hit Russian warship", support: "Corvette Merkury capsizes at Benghazi; suspected Ukrainian strike, no deaths reported", source: "AP, Reuters", color: SKY },
   { n: 3, region: "DYMER", headline: "Drone destroys Dymer apartment block", support: "At least 14 missing, feared trapped under rubble near Kyiv", source: "Reuters, AP", color: ORANGE },
   { n: 4, region: "WEST BANK", headline: "Settlers torch West Bank vehicles", support: "About a dozen Palestinian vehicles burned; Eisenkot calls it 'Jewish terrorism'", source: "Reuters, CNN", color: GOLD },
-  { n: 5, region: "SEOUL", headline: "Korean minister resigns over exam chaos", support: "Education minister quits after AI anti-cheating confusion around the CSAT exam", source: "Seoul Economic Daily, Korea JoongAng Daily", color: TEAL },
+  { n: 5, region: "SEOUL", headline: "Korean minister resigns over exam chaos", support: "Education minister quits after confusion over anti-AI-cheating rules at the CSAT exam", source: "Seoul Economic Daily, Korea JoongAng Daily", color: TEAL },
   { n: 6, region: "KHARTOUM", headline: "Drones hit Khartoum, UN building damaged", support: "Strikes on residential areas early Sunday; four reported killed", source: "UN ReliefWeb, Al Jazeera", color: INK },
   { n: 7, region: "ANFIELD", headline: "Liverpool thrash Man United 4–0", support: "Pochettino's first match as Man Utd manager ends in heavy Anfield defeat", source: "Reuters, NBC Sports", color: RED },
 ];
@@ -571,7 +573,7 @@ function layoutA(cv: Canvas): void {
     const headScale = 2.4;
     const supScale = 2.0;
     const full = st.support + " — " + st.source;
-    const supLines = wrapText(full, xRight - xTxt, supScale);
+    const supLines = wrapText(full, xRight - xTxt, supScale, true);
     const headH = 7 * headScale;
     const rowH = 6 + headH + 4 + supLines.length * 10 * supScale + 6;
     numChip(cv, xNum, y + 6 + headH / 2, 13, st.n, st.color);
